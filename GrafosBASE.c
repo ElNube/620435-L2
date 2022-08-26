@@ -123,7 +123,7 @@ MATRIZ_ADYACENCIA cargaAristas(MATRIZ_ADYACENCIA m){
 		fscanf(archivo, "%c-%c\n", &inicio, &fin);			
 		indice_inicio = getIndice(m.nombre_vertices, inicio);
 		indice_fin = getIndice(m.nombre_vertices, fin);
-		printf("\tArista %c-%c en [%d,%d]\n", inicio, fin, indice_inicio, indice_fin);
+		//printf("\tArista %c-%c en [%d,%d]\n", inicio, fin, indice_inicio, indice_fin);
 		*(m.matriz + ((indice_inicio)*m.total_vertices) + indice_fin) = 1;
 		*(m.matriz + ((indice_fin)*m.total_vertices) + indice_inicio) = 1;
 	}
@@ -190,7 +190,7 @@ void agregarAristas(LISTA_ADYACENCIA lista){
 		/* Agrega los vértices a la lista */		
 		agregaVertice(lista, inicio, fin);
 		agregaVertice(lista, fin, inicio);
-		printf("\tArista %c-%c cargada\n", inicio, fin);
+		printf("\tArista %c-%c peso %d cargada\n", inicio, fin);
 	}
 	fclose(archivo);	
 }

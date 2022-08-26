@@ -36,13 +36,24 @@ void agregaVertice(LISTA_ADYACENCIA, char, char);
 /* Funcion principal */
 int main(){
 	MATRIZ_ADYACENCIA gx;
-	char puertas[6];
-	strcpy(puertas,"abcde");
+
+	// Abro el archivo con los indicadores de las puertas y guardo la cadena de texto con los vertices del grafo
+	FILE *fpuertas = fopen("puertas.txt", "r");
+	int n = 5;
+	char puertas[n];
+	
+	// Forma (1)
+	fscanf(fpuertas, "%s", puertas);
+	fclose(fpuertas);
+	printf("%s\n", puertas);
+	
+	// Forma (2)
+	//strcpy(puertas,"abcde");
 
 	/* Usando una matri< de adyacencia */
 	gx = crearMatrizGrafo(puertas);
-	printf("Matriz creada!!\n");
-	verMatrizGrafo(gx);
+	//printf("Matriz creada!!\n");
+	//verMatrizGrafo(gx);
 	gx = cargaAristas(gx);
 	printf("Aristas cargadas!!\n");
 	verMatrizGrafo(gx);
@@ -51,6 +62,7 @@ int main(){
 	LISTA_ADYACENCIA gy = crearListaAdyacencia(puertas);
 	agregarAristas(gy);
 	verListaAdyacencia(gy);
+	
 	return 0;
 }
 
@@ -112,20 +124,22 @@ MATRIZ_ADYACENCIA cargaAristas(MATRIZ_ADYACENCIA m){
 	FILE *archivo;
 
 	char inicio, fin;
-	int indice_inicio, indice_fin;
-
+	int indice_inicio, indice_fin, auxPeso;
 	if ((archivo = fopen("distancias.txt", "r")) == NULL){
 		printf("Error al leer archivo\n");
 		return m;
 	}
 	
 	while (!feof(archivo)){	
-		fscanf(archivo, "%c-%c\n", &inicio, &fin);			
+		fscanf(archivo, "%c-%c %d\n", &inicio, &fin, &auxPeso);			
+		//fscanf(archivo, "%c-%c\n", &inicio, &fin);			
 		indice_inicio = getIndice(m.nombre_vertices, inicio);
 		indice_fin = getIndice(m.nombre_vertices, fin);
-		printf("\tArista %c-%c en [%d,%d]\n", inicio, fin, indice_inicio, indice_fin);
-		*(m.matriz + ((indice_inicio)*m.total_vertices) + indice_fin) = 1;
-		*(m.matriz + ((indice_fin)*m.total_vertices) + indice_inicio) = 1;
+		//fscanf(archivo, "%d\n", &auxPeso); // Puede fallar el \n
+		//printf("\tArista %c-%c con peso %d\n", inicio, fin, auxPeso);
+		//printf("\tArista %c-%c en [%d,%d] peso %d\n", inicio, fin, indice_inicio, indice_fin, auxPeso);
+		*(m.matriz + ((indice_inicio)*m.total_vertices) + indice_fin) = auxPeso;
+		*(m.matriz + ((indice_fin)*m.total_vertices) + indice_inicio) = auxPeso;
 	}
 	fclose(archivo);	
 	return m;
@@ -158,6 +172,8 @@ LISTA_ADYACENCIA crearListaAdyacencia(char *vertices){
 	for(i=0; i < strlen(vertices); i++){
 		vertice = (LISTA_ADYACENCIA) malloc(sizeof(struct s_elemento));
 		vertice->vertice = vertices[i];
+		vertice->siguiente = NULL; // +
+		vertice->conectado = NULL; // +
 		if (lx == NULL){
 			lx = vertice;
 			ultimo = lx;
@@ -179,18 +195,21 @@ void agregarAristas(LISTA_ADYACENCIA lista){
 	FILE *archivo;
 
 	char inicio, fin;
-
-	if ((archivo = fopen("aristas.txt", "r")) == NULL){
+	int auxPeso;
+	if ((archivo = fopen("distancias.txt", "r")) == NULL){
 		printf("Error al leer archivo\n");
 		return;
 	}
 	
 	while (!feof(archivo)){	
-		fscanf(archivo, "%c-%c\n", &inicio, &fin);	
-		/* Agrega los vértices a la lista */		
+		fscanf(archivo, "%c-%c", &inicio, &fin);
+		fscanf(archivo, "%d\n", &auxPeso);
+		/* Agrega los vértices a la lista */
+		//printf("aviso (1)\n");		
 		agregaVertice(lista, inicio, fin);
 		agregaVertice(lista, fin, inicio);
-		printf("\tArista %c-%c cargada\n", inicio, fin);
+		//printf("aviso (2)\n");	
+		printf("\tArista %c-%c con peso %d cargada\n", inicio, fin, auxPeso);
 	}
 	fclose(archivo);	
 }
@@ -208,7 +227,8 @@ void agregaVertice(LISTA_ADYACENCIA lista, char inicio, char fin){
 
 	auxiliar = lista;
 	nodo_fin = (NODO_VERTICE) malloc(sizeof(struct s_nodo));
-	nodo_fin->vertice = fin;	
+	nodo_fin->vertice = fin;
+	nodo_fin->siguiente = NULL; // +
 	/* Busca el vértice de inicio */	
 	while(auxiliar->vertice != inicio){
 		auxiliar = auxiliar->siguiente;
@@ -217,7 +237,7 @@ void agregaVertice(LISTA_ADYACENCIA lista, char inicio, char fin){
 	if (auxiliar->conectado == NULL){
 		auxiliar->conectado = nodo_fin;
 	}
-	else{		
+	else{
 		auxiliar_vertice = auxiliar->conectado;
 		while (auxiliar_vertice->siguiente != NULL){
 			auxiliar_vertice = auxiliar_vertice->siguiente;
