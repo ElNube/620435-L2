@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define CAPACIDAD 11
+//define CAPACIDAD 11
 
 typedef struct s_lista{
 	int valor;
@@ -27,8 +27,10 @@ void agregarClave(ENTRADA[], int);
 int buscar(ENTRADA[], int);
 
 int main(){
-	ENTRADA tabla[CAPACIDAD];
-	int i, aleatorio;
+	int i, aleatorio, capacidad;
+	printf("Capacidad de la tabla : ");
+	scanf("%d", &capacidad);
+	ENTRADA tabla[capacidad];
 	setearTabla(tabla);
 	/* Simula las claves aleatorias */
 	srand (time(NULL));
@@ -56,8 +58,8 @@ int main(){
 		k - Clave a la cual se aplica la funcion
 	@retorno - Codigo hash asociado a la clave
 */
-int hash(int k){
-	return k % CAPACIDAD;
+int hash(int k, int capacidad){
+	return (k % capacidad + 5) % capacidad;
 }
 
 /*
