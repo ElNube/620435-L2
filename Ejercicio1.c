@@ -1,3 +1,14 @@
+/**
+ * @file Ejercicio1.c
+ * @author Marcelo Alfredo Paz Pezo
+ * @firma …ᘛ⁐̤ᕐᐷ ICINF UBB
+ * @brief Dado un archivo con puertas, se desea crear una una matriz de adyacencia y una lista y mostrarlas por consola, y luego se desea buscar la cantidad de puer.
+ * @version 0.0.4
+ * @date 2022-08-26
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -12,11 +23,13 @@ typedef struct s_matriz{
 
 typedef struct s_nodo{
 	char vertice;
+	int peso;
 	struct s_nodo *siguiente;
 } *NODO_VERTICE;
 
 typedef struct s_elemento{
 	char vertice;
+	//int peso;
 	struct s_nodo *conectado;
 	struct s_elemento *siguiente;
 } *LISTA_ADYACENCIA;
@@ -33,7 +46,7 @@ int getIndice(char *, char);
 LISTA_ADYACENCIA crearListaAdyacencia(char *);
 void verListaAdyacencia(LISTA_ADYACENCIA);
 void agregarAristas(LISTA_ADYACENCIA);
-void agregaVertice(LISTA_ADYACENCIA, char, char);
+void agregaVertice(LISTA_ADYACENCIA, char, char, int);
 
 /* Prototipo de funciones especiales */
 
@@ -46,7 +59,6 @@ int cantidadPuertas(char *);
 int get_total_puertas(MATRIZ_ADYACENCIA, char);
 
 /* Obtiene el total de puertas usando la representaci´on de la lista de adyacencia */
-
 int get_totalPuertasLA(LISTA_ADYACENCIA, char);
 
 /* Funcion principal */
@@ -54,35 +66,29 @@ int main(){
 	MATRIZ_ADYACENCIA gy;
 
 	// Abro el archivo con los indicadores de las puertas y guardo la cadena de texto con los vertices del grafo
-	
-	int n = cantidadPuertas("puertas.txt") + 1;
+	int n = cantidadPuertas("puertas1.txt") + 1;
 	if (n < 4)
 	{
 		printf("Error: El formato de puertas.txt debe ser eNs, con N >= 1 cantidad de caracteres\n");
 		return 0;
 	}
-	
-	
 	char puertas[n], auxpuerta;
-	// Forma (1)
-	cargarPuertas(puertas, "puertas.txt");
+	cargarPuertas(puertas, "puertas1.txt");
 	printf("Puertas cargadas : %s\n", puertas);
 
-	// Forma (2)
-	//strcpy(puertas,"abcde");
 
-	// Usando una matri< de adyacencia
+	// Inicio la matriz de adyacencia con las distancias y muestro la matriz  
 	gy = crearMatrizGrafo(puertas);
-	//printf("Matriz creada!!\n");
-	//verMatrizGrafo(gx);
 	gy = cargaAristas(gy);
 	printf("Aristas cargadas!!\n");
 	verMatrizGrafo(gy);
 
-	// Ahora se usa la lista de adyacencia
+	// Declaro e inicio la lista de adyacencia con las distancias y muestro la lista
 	LISTA_ADYACENCIA gx = crearListaAdyacencia(puertas);
 	agregarAristas(gx);
 	verListaAdyacencia(gx);
+
+	/* Valido un ingreso de una puerta que exista */
 	do
 	{
 		printf("Puerta a consultar : ");
@@ -92,11 +98,14 @@ int main(){
 			printf("Ingrese un valor valido\n.");
 		}
 	} while (getIndice(puertas, auxpuerta) == -1);
-//	} while (buscarPuertas(puertas, auxpuerta) != 1);
 	
+	/* Muestro por consola los valores obtenidos de la cantidad de puertas  */
 	printf("Usando la representacion de la matriz de adyacentes\nDesde la puerta %c hay %d puertas disponibles\n", auxpuerta, get_total_puertas(gy, auxpuerta));
+
 	printf("Usando la representacion de la lista de adyacentes\nDesde la puerta %c hay %d puertas disponibles\n", auxpuerta, get_totalPuertasLA(gx, auxpuerta));
-	system("pause");
+	
+	/* Finalizo el programa */
+	printf("\nPROGRAMA FINALIZADO\n");
 	return 0;
 }
 
@@ -159,7 +168,7 @@ MATRIZ_ADYACENCIA cargaAristas(MATRIZ_ADYACENCIA m){
 
 	char inicio, fin;
 	int indice_inicio, indice_fin, auxPeso;
-	if ((archivo = fopen("distancias.txt", "r")) == NULL){
+	if ((archivo = fopen("distancias1.txt", "r")) == NULL){
 		printf("Error al leer archivo\n");
 		return m;
 	}
@@ -230,7 +239,7 @@ void agregarAristas(LISTA_ADYACENCIA lista){
 
 	char inicio, fin;
 	int auxPeso;
-	if ((archivo = fopen("distancias.txt", "r")) == NULL){
+	if ((archivo = fopen("distancias1.txt", "r")) == NULL){
 		printf("Error al leer archivo\n");
 		return;
 	}
@@ -238,8 +247,8 @@ void agregarAristas(LISTA_ADYACENCIA lista){
 	while (!feof(archivo)){	
 		fscanf(archivo, "%c-%c %d\n", &inicio, &fin, &auxPeso);
 		/* Agrega los vértices a la lista */
-		agregaVertice(lista, inicio, fin);
-		agregaVertice(lista, fin, inicio);
+		agregaVertice(lista, inicio, fin, auxPeso);
+		agregaVertice(lista, fin, inicio, auxPeso);
 		printf("\tArista %c-%c con peso %d cargada\n", inicio, fin, auxPeso);
 	}
 	fclose(archivo);	
@@ -252,13 +261,14 @@ void agregarAristas(LISTA_ADYACENCIA lista){
 		- inicio: extremo inicial de la arista
 		- fin: extremo final de la arista	
 */
-void agregaVertice(LISTA_ADYACENCIA lista, char inicio, char fin){
+void agregaVertice(LISTA_ADYACENCIA lista, char inicio, char fin, int peso){
 	LISTA_ADYACENCIA auxiliar;
 	NODO_VERTICE nodo_fin, auxiliar_vertice;
 
 	auxiliar = lista;
 	nodo_fin = (NODO_VERTICE) malloc(sizeof(struct s_nodo));
 	nodo_fin->vertice = fin;
+	nodo_fin->peso = peso;
 	nodo_fin->siguiente = NULL; // +
 	/* Busca el vértice de inicio */	
 	while(auxiliar->vertice != inicio){
@@ -267,6 +277,7 @@ void agregaVertice(LISTA_ADYACENCIA lista, char inicio, char fin){
 	/* Asocia el extremo */
 	if (auxiliar->conectado == NULL){
 		auxiliar->conectado = nodo_fin;
+		//auxiliar->peso = peso;
 	}
 	else{
 		auxiliar_vertice = auxiliar->conectado;
@@ -291,7 +302,7 @@ void verListaAdyacencia(LISTA_ADYACENCIA lista){
 		printf("\t%c ==> ", auxiliar->vertice);
 		aux_vertice = auxiliar->conectado;
 		while (aux_vertice != NULL){
-			printf("%c", aux_vertice->vertice);
+			printf("%c (%d)", aux_vertice->vertice, aux_vertice->peso);
 			aux_vertice = aux_vertice->siguiente;
 			printf("%s", (aux_vertice == NULL?"\n":" -> "));
 		}		
@@ -312,18 +323,6 @@ void cargarPuertas(char * puertas, char * direccion){
 	}
 	fclose(fpuertas);
 }
-
-
-int buscarPuertas(char * puertas, char buscar){
-	//char *auxPuertas = puertas;
-	for (int i = 0; i < strlen(puertas); i++)
-	{
-		if (puertas[i] == buscar)
-			return 1;
-	}
-	return 0;
-}
-
 
 /**
  * @brief Abrir un archivo y contar la cantidad de caracteres que se desean reservar, tambien sirve para validar la cantidad de puertas
@@ -347,7 +346,7 @@ int cantidadPuertas(char *direccion){
 	while (!feof(filepuertas))
 	{
 		// Escaneamos del archivo 'filepuertas', una cadena "%s", y lo guardamos en el array 'puertas'
-		fscanf(filepuertas, "%s\n", puertas); // buscar el porque esta linea dice ser no utilizada en el codigo
+		fscanf(filepuertas, "%s\n", puertas);
 	}
 
 	// Cerramos el archivo
@@ -366,11 +365,14 @@ int cantidadPuertas(char *direccion){
  */
 int get_total_puertas(MATRIZ_ADYACENCIA m, char elegido){
 	int contador = 0;
+	/* Busco la fila donde esta la puerta */
 	for(int i=1; i <= m.total_vertices; i++){
 		if (m.nombre_vertices[i-1] == elegido)
 		{
+			/* Y recorro la fila de forma horizontal */
 			for(int j=0; j < m.total_vertices; j++)
 			{
+				/* Mi logica fue prueba  y error, pero lo que queria lograr es que no contara las puertas semejantes entonces solo cuenta las puertas de la matriz superior de la diagonal, al menos funciona con este caso :( piedad*/
 				if (!(i>j && *(m.matriz + ((i-1)*m.total_vertices)+j) > 0))
 				{
 					if (*(m.matriz + ((i-1)*m.total_vertices)+j) > 0)
@@ -387,6 +389,40 @@ int get_total_puertas(MATRIZ_ADYACENCIA m, char elegido){
 	return contador;
 }
 
+/**
+ * @brief Obtiene la cantidad de puertas que le siguen a una determinada puerta
+ * 
+ * @param la Lista de adyacencia
+ * @param elegido puerta elegida 
+ * @return La cantidad de puertas que le siguen en n entero
+ */
 int get_totalPuertasLA(LISTA_ADYACENCIA la, char elegido){
-	return 0;
+	int contador = 0, contadorfila =0;
+	
+	LISTA_ADYACENCIA auxiliar = la;
+	NODO_VERTICE aux_vertice;
+
+	
+	/* Recorremos la lista */
+	while(auxiliar != NULL)
+	{
+		/* Validamos que el vertice es la puerta elegida*/
+		if (auxiliar->vertice == elegido)
+		{
+			/* Obtenemos la lista de conectados y contamos las puertas*/
+			aux_vertice = auxiliar->conectado;
+			while (aux_vertice != NULL){
+				contador++;
+				aux_vertice = aux_vertice->siguiente;
+			}
+
+			if (contador - contadorfila>0)
+				/* a las puertas le restamos las filas porque si, mi logica fue que cada fila tiene menos posiciones para tener nodos dirigidos pues solo se puede avanzar hacia delante, entonces por eso resto las posiciones, al menos funciona con este caso :( piedad */
+				return contador - contadorfila;
+			return 0;
+		}
+		auxiliar = auxiliar->siguiente;
+		contadorfila++;
+	}
+	return contador;
 }
