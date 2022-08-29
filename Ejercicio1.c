@@ -5,6 +5,11 @@
  * @brief Dado un archivo con puertas, se desea crear una una matriz de adyacencia y una lista y mostrarlas por consola, y luego se desea buscar la cantidad de puer.
  * @version 0.0.4
  * @date 2022-08-26
+ * @Aclaraciones: Siendo sincero el tranformar el codigo fue un poco complejo por la poca cantidad de tiempo
+ - Lo que es peor es que no entendi bien las condiciones, ahora siento que podria tener un 1 porque altere la 
+   estructura de casi todo, eso es confuso, hoy no se duerme.
+ - Las condiciones 5 y 6 creo haberlas entendido mal, cumpli con la 6 solo en las funciones getpuertas
+ - Pero bueno la vida sigue y ya me fue mal en todo pinche semana dificil.
  * 
  * @copyright Copyright (c) 2022
  * 
@@ -13,7 +18,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define MAX_VERTICES 100
+//define MAX_VERTICES 100
 
 typedef struct s_matriz{
 	int *matriz;
@@ -66,14 +71,14 @@ int main(){
 	MATRIZ_ADYACENCIA gy;
 
 	// Abro el archivo con los indicadores de las puertas y guardo la cadena de texto con los vertices del grafo
-	int n = cantidadPuertas("puertas1.txt") + 1;
+	int n = cantidadPuertas("puertas.txt") + 1;
 	if (n < 4)
 	{
 		printf("Error: El formato de puertas.txt debe ser eNs, con N >= 1 cantidad de caracteres\n");
 		return 0;
 	}
 	char puertas[n], auxpuerta;
-	cargarPuertas(puertas, "puertas1.txt");
+	cargarPuertas(puertas, "puertas.txt");
 	printf("Puertas cargadas : %s\n", puertas);
 
 
@@ -168,7 +173,7 @@ MATRIZ_ADYACENCIA cargaAristas(MATRIZ_ADYACENCIA m){
 
 	char inicio, fin;
 	int indice_inicio, indice_fin, auxPeso;
-	if ((archivo = fopen("distancias1.txt", "r")) == NULL){
+	if ((archivo = fopen("distancias.txt", "r")) == NULL){
 		printf("Error al leer archivo\n");
 		return m;
 	}
@@ -239,7 +244,7 @@ void agregarAristas(LISTA_ADYACENCIA lista){
 
 	char inicio, fin;
 	int auxPeso;
-	if ((archivo = fopen("distancias1.txt", "r")) == NULL){
+	if ((archivo = fopen("distancias.txt", "r")) == NULL){
 		printf("Error al leer archivo\n");
 		return;
 	}
